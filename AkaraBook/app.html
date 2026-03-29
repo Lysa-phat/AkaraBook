@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Akara Book | Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script defer src="js/theme.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="mobile-block">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0f766e"/><rect x="13" y="12" width="10" height="40" rx="3" fill="#99f6e4"/><rect x="23" y="12" width="28" height="40" rx="3" fill="#fff"/><rect x="28" y="22" width="17" height="4" rx="2" fill="#0f766e"/><rect x="28" y="31" width="13" height="4" rx="2" fill="#0f766e"/><rect x="28" y="40" width="15" height="4" rx="2" fill="#0f766e"/></svg>
+    <h2>Akara Book</h2>
+    <p>This app is designed for desktop. Please open it on a larger screen.</p>
+  </div>
+  <div class="app-layout">
+    <!-- Navigation -->
+    <nav class="sidebar">
+      <div class="user-profile-top">
+        <div class="avatar avatar-lg" id="user-avatar">
+          <img id="user-avatar-img" class="hidden" alt="" width="88" height="88" decoding="async">
+          <span id="user-avatar-initial">?</span>
+        </div>
+        <h3 id="user-name" class="user-name-center">Loading...</h3>
+      </div>
+
+      <ul class="nav-links">
+        <li><a href="#" class="active" data-view="dashboard"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a></li>
+        <li><a href="#" data-view="library"><i data-lucide="library"></i> <span>My Library</span></a></li>
+        <li><a href="#" data-view="settings"><i data-lucide="settings"></i> <span>Settings</span></a></li>
+      </ul>
+      
+      <div class="sidebar-bottom">
+        <button type="button" id="btn-logout" class="btn-logout-center">
+          <i data-lucide="log-out"></i> Log Out
+        </button>
+        <div class="sidebar-version">v1.0.0.0-2603262121</div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Search Bar & Top Actions -->
+      <header class="topbar" style="align-items: center;">
+        <div class="topbar-left" style="display: flex; align-items: center; gap: 16px;">
+          <button type="button" class="btn-outline btn-icon-pill" id="btn-toggle-sidebar" aria-label="Toggle menu" title="Menu">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="brand" style="padding: 0;">
+            <h2 id="site-name" style="font-size: 1.65rem; margin: 0; padding: 0;">Akara Book</h2>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <div class="search-container collapsed" id="search-container">
+            <button type="button" class="btn-icon-pill btn-search-toggle" id="btn-search-toggle" aria-label="Search" title="Search">
+              <i data-lucide="search"></i>
+            </button>
+            <input type="text" id="book-search-input" placeholder="Search books…">
+          </div>
+          <a href="#" data-view="settings" class="btn-outline btn-icon-pill open-profile-topbar" title="Profile and settings" aria-label="Profile and settings">
+            <i data-lucide="user"></i>
+          </a>
+          <button type="button" id="btn-add-manual" class="btn-outline btn-icon-pill" title="Manually Add Book"><i data-lucide="plus"></i></button>
+          <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+            <i data-lucide="sun" class="theme-icon-sun" aria-hidden="true"></i>
+            <i data-lucide="moon" class="theme-icon-moon" aria-hidden="true"></i>
+          </button>
+        </div>
+      </header>
+      
+
+      <!-- Views -->
+      <div id="view-dashboard" class="view-section active">
+        <h1>Welcome, <span id="welcome-name">Reader</span></h1>
+        <p class="page-sub">
+          <span class="marquee" aria-label="App subtitle">
+            <span class="marquee-inner">
+              <span class="marquee-item">Your cozy reading nook — track books, pages, and happy streaks.</span>
+              <span class="marquee-item">Your cozy reading nook — track books, pages, and happy streaks.</span>
+            </span>
+          </span>
+        </p>
+        <!-- Reading Goal -->
+        <div class="goal-card" id="goal-card">
+          <div class="goal-card-left">
+            <div class="goal-card-label">Reading Goal <span id="goal-year"></span></div>
+            <div class="goal-card-counts"><span id="goal-current">0</span><span class="goal-sep"> / </span><span id="goal-target">—</span> books</div>
+          </div>
+          <div class="goal-card-right">
+            <div class="goal-bar-bg"><div class="goal-bar-fill" id="goal-bar-fill"></div></div>
+            <div class="goal-pct" id="goal-pct">Set a goal in Settings</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <h3>Total Books</h3>
+              <div class="stat-icon-top"><i data-lucide="library"></i></div>
+            </div>
+            <p class="stat-value" id="stat-total-books">0</p>
+            <p class="stat-subtext">In your library</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <h3>Currently<br>Reading</h3>
+              <div class="stat-icon-top"><i data-lucide="book-open"></i></div>
+            </div>
+            <p class="stat-value" id="stat-currently-reading">0</p>
+            <p class="stat-subtext" id="stat-currently-reading-sub">0 books in progress</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <h3>Finished</h3>
+              <div class="stat-icon-top"><i data-lucide="check-circle-2"></i></div>
+            </div>
+            <p class="stat-value" id="stat-finished">0</p>
+            <p class="stat-subtext">Books completed</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <h3>Pages Read</h3>
+              <div class="stat-icon-top"><i data-lucide="book-marked"></i></div>
+            </div>
+            <p class="stat-value" id="stat-pages-read">0</p>
+            <p class="stat-subtext">This year</p>
+          </div>
+        </div>
+        
+        <!-- Currently Reading panel -->
+        <div id="current-reading" class="current-reading">
+          <!-- Rendered by JS -->
+          <div class="current-reading-inner">
+            <div class="cr-empty">No active reading selected. Choose a book to track your progress.</div>
+          </div>
+        </div>
+
+        <div class="dashboard-charts">
+          <div class="chart-container">
+            <h3>Genre Distribution</h3>
+            <div class="canvas-wrapper">
+              <canvas id="genreChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-container">
+            <h3>Reading Velocity</h3>
+            <div class="canvas-wrapper">
+              <canvas id="velocityChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-library" class="view-section hidden">
+        <h1>My Library</h1>
+        <p class="page-sub">Organize your books with shelves &amp; series.</p>
+        <div class="library-tabs">
+          <button class="tab-btn active" data-status="Reading">Currently Reading</button>
+          <button class="tab-btn" data-status="ToRead">Want to Read</button>
+          <button class="tab-btn" data-status="Read">Read</button>
+        </div>
+        <div class="library-toolbar">
+          <div class="library-filters">
+            <label class="filter-label"><span>Shelf</span>
+              <select id="library-filter-shelf" class="library-select">
+                <option value="">All shelves</option>
+                <option value="__unshelved__">Unshelved</option>
+              </select>
+            </label>
+            <label class="filter-label"><span>Series</span>
+              <select id="library-filter-series" class="library-select">
+                <option value="">All series</option>
+              </select>
+            </label>
+          </div>
+          <div class="filter-toggles">
+            <button type="button" class="filter-toggle-btn" id="btn-favorites-only" aria-pressed="false">
+              <i data-lucide="heart"></i> Favorites
+            </button>
+            <button type="button" class="filter-toggle-btn" id="btn-group-series" aria-pressed="false">
+              <i data-lucide="layers"></i> Group by series
+            </button>
+          </div>
+        </div>
+
+        <div id="library-groups" class="library-groups"></div>
+        <div id="library-grid" class="book-grid">
+          <!-- Main Library books injected here -->
+        </div>
+      </div>
+
+      <div id="view-book-details" class="view-section hidden">
+        <button type="button" id="btn-back-library" class="btn-text btn-back-cute"><i data-lucide="arrow-left"></i> Back to Library</button>
+        <div id="book-details-content">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+      
+      <div id="view-settings" class="view-section hidden">
+        <h1>Settings</h1>
+
+        <div class="settings-grid">
+
+          <!-- Profile card -->
+          <div class="s-card">
+            <div class="s-card-title"><i data-lucide="user"></i> Profile</div>
+            <div class="s-avatar-row">
+              <div class="settings-avatar" id="settings-avatar">
+                <img id="settings-avatar-img" class="hidden" alt="" width="96" height="96" decoding="async">
+                <span id="settings-avatar-initial">?</span>
+              </div>
+              <div class="s-avatar-btns">
+                <input type="file" id="avatar-file-input" class="hidden" accept="image/jpeg,image/png,image/webp,image/gif">
+                <button type="button" class="btn-primary btn-sm" id="btn-choose-avatar"><i data-lucide="upload"></i> Upload</button>
+                <button type="button" class="btn-outline btn-sm" id="btn-remove-avatar"><i data-lucide="image-off"></i> Remove</button>
+              </div>
+            </div>
+            <form id="form-profile-core" class="s-form">
+              <div class="input-group">
+                <label for="settings-display-name">Display name</label>
+                <input type="text" id="settings-display-name" maxlength="80" autocomplete="nickname" required placeholder="Your name">
+              </div>
+              <div class="input-group">
+                <label for="settings-bio">Bio</label>
+                <textarea id="settings-bio" rows="3" maxlength="280" placeholder="What do you love to read?"></textarea>
+              </div>
+              <p id="profile-core-error" class="settings-error hidden"></p>
+              <p id="profile-core-success" class="settings-msg hidden"></p>
+              <button type="submit" class="btn-primary" id="btn-save-profile-core">Save profile</button>
+            </form>
+          </div>
+
+          <!-- Account card -->
+          <div class="s-card">
+            <div class="s-card-title"><i data-lucide="shield"></i> Account</div>
+            <div id="account-provider-row" class="provider-pill"><i data-lucide="key"></i> <span id="account-provider-text"></span></div>
+            <p class="account-email-line" id="settings-current-email"></p>
+
+            <div id="block-email-password" class="hidden s-form">
+              <div class="s-sub">
+                <div class="s-sub-title">Change email</div>
+                <form id="form-change-email">
+                  <div class="input-group">
+                    <label for="new-email">New email</label>
+                    <input type="email" id="new-email" required autocomplete="email" placeholder="new@example.com">
+                  </div>
+                  <p id="email-change-error" class="settings-error hidden"></p>
+                  <p id="email-change-success" class="settings-msg hidden"></p>
+                  <button type="submit" class="btn-outline btn-sm" id="btn-submit-email">Send verification</button>
+                </form>
+              </div>
+              <div class="s-sub">
+                <div class="s-sub-title">Change password</div>
+                <form id="form-change-password">
+                  <div class="input-group">
+                    <label for="current-password">Current</label>
+                    <input type="password" id="current-password" autocomplete="current-password" required placeholder="Current password">
+                  </div>
+                  <div class="input-group">
+                    <label for="new-password">New</label>
+                    <input type="password" id="new-password" autocomplete="new-password" required placeholder="Min. 6 characters" minlength="6">
+                  </div>
+                  <div class="input-group">
+                    <label for="confirm-new-password">Confirm</label>
+                    <input type="password" id="confirm-new-password" autocomplete="new-password" required placeholder="Repeat" minlength="6">
+                  </div>
+                  <p id="password-change-error" class="settings-error hidden"></p>
+                  <p id="password-change-success" class="settings-msg hidden"></p>
+                  <button type="submit" class="btn-primary btn-sm" id="btn-submit-password">Update password</button>
+                </form>
+                <button type="button" class="btn-outline btn-sm" id="btn-send-reset-email" style="margin-top:12px"><i data-lucide="mail"></i> Send reset email</button>
+                <p id="reset-email-msg" class="settings-msg hidden"></p>
+              </div>
+            </div>
+
+            <div id="block-google-only" class="hidden">
+              <p class="field-hint">Managed by Google.</p>
+            </div>
+          </div>
+
+          <!-- Appearance card -->
+          <div class="s-card">
+            <div class="s-card-title"><i data-lucide="palette"></i> Appearance</div>
+            <div class="s-pref-row">
+              <div class="s-pref-info">
+                <span>Theme</span>
+                <span class="s-pref-sub">Light or dark</span>
+              </div>
+              <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+                <i data-lucide="sun" class="theme-icon-sun" aria-hidden="true"></i>
+                <i data-lucide="moon" class="theme-icon-moon" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div class="s-pref-row">
+              <div class="s-pref-info">
+                <span>Reduce motion</span>
+                <span class="s-pref-sub">Less animations</span>
+              </div>
+              <label class="s-toggle">
+                <input type="checkbox" id="pref-reduced-motion">
+                <span class="s-toggle-track"><span class="s-toggle-thumb"></span></span>
+              </label>
+            </div>
+            <div class="s-pref-row">
+              <div class="s-pref-info">
+                <span>Yearly book goal</span>
+                <span class="s-pref-sub">Books to read this year</span>
+              </div>
+              <div class="goal-input-wrap">
+                <input type="number" id="goal-target-input" min="1" max="999" placeholder="e.g. 24">
+                <button type="button" class="btn-primary btn-sm" id="btn-save-goal">Save</button>
+              </div>
+            </div>
+            <p id="goal-save-msg" class="settings-msg hidden">Goal saved!</p>
+          </div>
+
+          <!-- Legal & session card -->
+          <div class="s-card">
+            <div class="s-card-title"><i data-lucide="scale"></i> Legal & Session</div>
+            <div class="s-legal-row">
+              <a href="#" id="link-privacy-settings" class="s-legal-link"><i data-lucide="shield"></i> Privacy Policy</a>
+              <a href="#" id="link-terms-settings" class="s-legal-link"><i data-lucide="file-text"></i> Terms of Service</a>
+            </div>
+            <button type="button" class="btn-outline s-signout-btn" id="btn-settings-sign-out"><i data-lucide="log-out"></i> Log Out</button>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Manual Add Modal -->
+  <div id="modal-manual-add" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="display:flex; align-items:center; gap:12px; margin:0;"><i data-lucide="book-plus" style="color:var(--primary-color);"></i> Add Book Manually</h3>
+        <button id="close-manual-add" class="btn-icon"><i data-lucide="x"></i></button>
+      </div>
+      <form id="form-manual-add" class="modal-form-grid">
+        <div class="input-group">
+          <label>Title <span style="color:var(--error-color);">*</span></label>
+          <input type="text" id="manual-title" required placeholder="The Great Gatsby">
+        </div>
+        <div class="input-group">
+          <label>Author <span style="color:var(--error-color);">*</span></label>
+          <input type="text" id="manual-author" required placeholder="F. Scott Fitzgerald">
+        </div>
+        <div class="input-group">
+          <label>ISBN</label>
+          <input type="text" id="manual-isbn" placeholder="9780743273565">
+        </div>
+        <div class="input-group">
+          <label>Page Count</label>
+          <input type="number" id="manual-pages" placeholder="218">
+        </div>
+        <div class="input-group full-width">
+          <label>Tags / Categories (comma separated)</label>
+          <input type="text" id="manual-categories" placeholder="Classic, Fiction, 1920s">
+        </div>
+        <div class="input-group">
+          <label>Shelf (optional)</label>
+          <input type="text" id="manual-shelf" placeholder="Bedside, Study…">
+        </div>
+        <div class="input-group">
+          <label>Series (optional)</label>
+          <input type="text" id="manual-series" placeholder="e.g. Bridgerton #3">
+        </div>
+        <div class="input-group full-width">
+          <label>Cover Image URL</label>
+          <input type="url" id="manual-cover" placeholder="https://example.com/cover.jpg">
+        </div>
+        <div class="input-group full-width">
+          <label>Description</label>
+          <textarea id="manual-description" rows="3" placeholder="A true classic of literature..."></textarea>
+        </div>
+        <div class="input-group full-width">
+          <label>Status</label>
+          <select id="manual-status">
+            <option value="ToRead">Want to Read</option>
+            <option value="Reading">Currently Reading</option>
+            <option value="Read">Already Read</option>
+          </select>
+        </div>
+        <p id="manual-add-error" class="error-text hidden full-width"></p>
+        <button type="submit" class="btn-primary full-width" id="btn-manual-submit" style="margin-top: 8px;">Save Book to Library</button>
+      </form>
+    </div>
+  </div>
+  
+  <div id="modal-privacy" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h3 style="margin:0; color:var(--primary-color);">Privacy Policy</h3>
+        <button id="close-privacy" class="btn-icon"><i data-lucide="x"></i></button>
+      </div>
+      <div style="padding-top: var(--spacing-md); line-height: 1.6; color: var(--text-muted); font-weight: 600;">
+        <p>Last Updated: October 2026</p>
+        <h2 style="color: var(--text-main); font-weight: 800; margin: var(--spacing-lg) 0 var(--spacing-sm);">1. Information We Collect</h2>
+        <p>When you create an account, we collect your email address and display name via Google Firebase Authentication. When you add books, we store your reading library data in Firebase Firestore.</p>
+        <h2 style="color: var(--text-main); font-weight: 800; margin: var(--spacing-lg) 0 var(--spacing-sm);">2. How We Use Your Information</h2>
+        <p>Your information is used solely to provide and improve the Akara Book service. We use it to authenticate your login across devices and save your personal digital library data.</p>
+        <h2 style="color: var(--text-main); font-weight: 800; margin: var(--spacing-lg) 0 var(--spacing-sm);">3. Data Sharing</h2>
+        <p>We do not sell, trade, or otherwise transfer your personally identifiable information to outside parties. Your data is securely hosted on Google Firebase.</p>
+        <h2 style="color: var(--text-main); font-weight: 800; margin: var(--spacing-lg) 0 var(--spacing-sm);">4. Security</h2>
+        <p>We implement a variety of security measures via Firebase to maintain the safety of your personal information. However, no method of transmission over the Internet is 100% secure.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-terms" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h3 style="margin:0; color:var(--primary-color);">Terms of Service</h3>
+        <button id="close-terms" class="btn-icon"><i data-lucide="x"></i></button>
+      </div>
+      <div style="padding-top: var(--spacing-md); line-height: 1.6; color: var(--text-muted); font-weight: 600;">
+        <p>Last Updated: October 2026</p>
+        <h2 style="color: var(--text-main); font-weight: 800; margin: var(--spacing-lg) 0 var(--spacing-sm);">1. Acceptance of Terms</h2>
+        <p>By accessing or using Akara Book, you agree to be bound by these Terms of Service. If you do not agree, please do not use our services.</p>
+        <h2 style="color: var(--text-main); font-weight: 800; margin: var(--spacing-lg) 0 var(--spacing-sm);">2. User Accounts</h2>
+        <p>You must provide accurate information when creating an account. You are responsible for safeguarding your password and any activities or actions under your account.</p>
+        <h2 style="color: var(--text-main); font-weight: 800; margin: var(--spacing-lg) 0 var(--spacing-sm);">3. Content and Conduct</h2>
+        <p>You retain all rights to the data you submit to your digital library. However, you agree not to use the service for any illegal or unauthorized purpose.</p>
+        <h2 style="color: var(--text-main); font-weight: 800; margin: var(--spacing-lg) 0 var(--spacing-sm);">4. Termination</h2>
+        <p>We may terminate or suspend access to our service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Search Results Overlay -->
+  <div id="search-results-overlay" class="modal-overlay hidden">
+    <div class="modal-card search-results-modal">
+      <div class="search-results-header">
+        <h3>Search Results</h3>
+        <button id="close-search" class="btn-icon" aria-label="Close search"><i data-lucide="x"></i></button>
+      </div>
+      <div id="search-results-list" class="search-result-list">
+        <!-- Loaded via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="js/app.js"></script>
+  <script>
+    // Marquee: 24 sentences, switch once per hour. Items scroll left-to-right
+    (function setupHourlyMarquee(){
+      const sentences = [
+        'Your cozy reading nook — track books, pages, and happy streaks.',
+        'Discover a new chapter in your day — one page at a time.',
+        'Build tiny rituals: read five minutes, feel ten times better.',
+        'Bookmarks are memories — collect them like tiny trophies.',
+        'Find the next plot twist hiding on your shelf.',
+        'Coffee, cardigan, and a quiet page — welcome home.',
+        'Notes in the margins become your future annotations.',
+        'Stories are the shortest routes to someone else’s heart.',
+        'Keep a shelf for curiosity; add something weird today.',
+        'Read aloud once this week — your voice changes the book.',
+        'Libraries are time machines with less maintenance required.',
+        'Treat a sentence like a small miracle and savor it.',
+        'Swap a screen minute for a page and see the math work.',
+        'A single paragraph can reroute your whole week.',
+        'Finish chapters with intention — small endings matter.',
+        'Revisit a childhood favorite and notice what changed.',
+        'Share a book rec with someone who won’t expect it.',
+        'Turn the page when you need to move forward, literally.',
+        'Collect author names like seeds; plant them later.',
+        'Let the punctuation breathe; you deserve the pauses.',
+        'Highlight one line daily and keep it for rainy thoughts.',
+        'Swap guilty browsing for a poem — it’s the same dopamine.',
+        'Books age like people: the good ones deepen, not fade.'
+      ];
+
+      function currentSentence() {
+        const now = new Date();
+        return sentences[now.getHours() % sentences.length];
+      }
+
+      function msToNextHour() {
+        const now = new Date();
+        return ((59 - now.getMinutes()) * 60 + (60 - now.getSeconds())) * 1000 - now.getMilliseconds();
+      }
+
+      function initMarqueeFor(container) {
+        const inner = container.querySelector('.marquee-inner');
+        if (!inner) return;
+
+        // build two copies of the current sentence for seamless loop
+        const t = currentSentence();
+        inner.innerHTML = '';
+        const a = document.createElement('span');
+        const b = document.createElement('span');
+        a.className = 'marquee-item';
+        b.className = 'marquee-item';
+        a.textContent = t;
+        b.textContent = t;
+        inner.appendChild(a);
+        inner.appendChild(b);
+
+        // measure and size so only one item visible at a time (connected seam)
+        const containerWidth = container.clientWidth || document.documentElement.clientWidth;
+        a.style.whiteSpace = 'nowrap';
+        b.style.whiteSpace = 'nowrap';
+        // force reflow
+        void a.offsetWidth;
+        const measured = a.getBoundingClientRect().width;
+        const itemWidth = Math.max(measured, containerWidth);
+
+        [a, b].forEach((el) => {
+          el.style.display = 'inline-block';
+          el.style.width = itemWidth + 'px';
+        });
+        inner.style.width = (itemWidth * 2) + 'px';
+
+        // set animation duration (can be tuned in CSS via --marquee-duration)
+        const duration = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--marquee-duration')) || 16;
+        // Use the CSS percentage-based keyframes (translateX -50%) for smooth, uniform motion
+        inner.style.animationName = 'marquee';
+        inner.style.animationDuration = duration + 's';
+        inner.style.animationTimingFunction = 'linear';
+        inner.style.animationIterationCount = 'infinite';
+        inner.style.animationPlayState = 'running';
+        inner.style.transform = 'translateX(0)';
+      }
+
+      function initAll() {
+        document.querySelectorAll('.marquee').forEach(initMarqueeFor);
+      }
+
+      function scheduleHourlyUpdate() {
+        setTimeout(() => {
+          initAll();
+          scheduleHourlyUpdate();
+        }, msToNextHour() + 50);
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { initAll(); scheduleHourlyUpdate(); });
+      else { initAll(); scheduleHourlyUpdate(); }
+      window.addEventListener('resize', () => { setTimeout(initAll, 120); });
+    })();
+  </script>
+</body>
+</html>
