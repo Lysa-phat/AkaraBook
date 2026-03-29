@@ -70,10 +70,23 @@ const getErrorMessage = (code) => {
   switch(code) {
     case 'auth/email-already-in-use': return 'This email is already registered. Please log in.';
     case 'auth/invalid-credential': return 'Invalid email or password.';
-    case 'auth/weak-password': return 'Password should be at least 6 characters.';
-    default: return 'An error occurred. Please try again.';
+    case 'auth/invalid-email': return 'Please enter a valid email address.';
+    case 'auth/user-not-found': return 'No account found with this email.';
+    case 'auth/wrong-password': return 'Incorrect password. Try again.';
+    case 'auth/too-many-requests': return 'Too many attempts. Please wait a moment and try again.';
+    case 'auth/weak-password': return 'Password must be at least 6 characters with uppercase, lowercase, and a number.';
+    case 'auth/network-request-failed': return 'Network error. Check your connection.';
+    default: return 'Something went wrong. Please try again.';
   }
 };
+
+function validatePassword(password) {
+  if (password.length < 6) return 'Password must be at least 6 characters.';
+  if (!/[A-Z]/.test(password)) return 'Password must include at least one uppercase letter.';
+  if (!/[a-z]/.test(password)) return 'Password must include at least one lowercase letter.';
+  if (!/[0-9]/.test(password)) return 'Password must include at least one number.';
+  return null;
+}
 
 // Login Action
 loginForm.addEventListener('submit', async (e) => {
@@ -108,6 +121,15 @@ registerForm.addEventListener('submit', async (e) => {
   try {
     btn.textContent = 'Creating account...';
     btn.disabled = true;
+
+    const validationError = validatePassword(password);
+    if (validationError) {
+      showError(regError, validationError);
+      btn.textContent = 'Create Account';
+      btn.disabled = false;
+      return;
+    }
+
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
     // Update profile with display name

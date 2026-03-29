@@ -344,8 +344,9 @@
   padding: 0;
   width: 44px;
   height: 44px;
+  position: relative;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease, background-color var(--transition-speed) ease;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .search-container.expanded {
@@ -353,6 +354,8 @@
   padding-right: 16px;
   border-color: var(--surface-border);
   background-color: var(--surface-color);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
 }
 
 @media (max-width: 768px) {
@@ -417,6 +420,62 @@
   border: none !important;
   box-shadow: none !important;
 }
+
+/* Search history dropdown */
+.search-history-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--surface-color);
+  border: 2px solid var(--surface-border);
+  border-radius: 14px;
+  list-style: none;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  z-index: 50;
+}
+
+.sh-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background var(--transition-speed) ease;
+}
+
+.sh-item:hover { background: var(--surface-elevated); }
+
+.sh-icon { color: var(--text-muted); display: flex; flex-shrink: 0; }
+.sh-icon svg { width: 14px; height: 14px; }
+
+.sh-term {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sh-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+.sh-item:hover .sh-remove { opacity: 1; }
+.sh-remove:hover { color: var(--error-color); }
+.sh-remove svg { width: 14px; height: 14px; }
 
 /* --- Search Results Overlay --- */
 #search-results-overlay {
@@ -2524,6 +2583,95 @@
 .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
 
 textarea { resize: none !important; }
+
+/* Confirm modal */
+.confirm-modal {
+  max-width: 400px !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: 36px 32px !important;
+}
+
+.confirm-modal-icon i,
+.confirm-modal-icon svg {
+  width: 40px;
+  height: 40px;
+  color: var(--error-color);
+}
+
+.confirm-modal-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.confirm-modal-msg {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.confirm-modal-actions .btn-outline,
+.confirm-modal-actions .btn-primary {
+  width: auto;
+  margin-top: 0;
+  padding: 10px 24px;
+}
+
+.btn-danger-confirm {
+  background: linear-gradient(135deg, var(--error-color), color-mix(in srgb, var(--error-color) 70%, #000)) !important;
+  color: #fff !important;
+}
+
+/* Delete button on book card */
+.btn-delete-book {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px solid transparent;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color var(--transition-speed) ease, border-color var(--transition-speed) ease, background var(--transition-speed) ease;
+}
+
+.btn-delete-book:hover {
+  color: var(--error-color);
+  border-color: color-mix(in srgb, var(--error-color) 35%, var(--surface-border));
+  background: color-mix(in srgb, var(--error-color) 8%, transparent);
+}
+
+.btn-delete-book svg { width: 15px; height: 15px; }
+
+/* Delete button on book detail */
+.btn-delete-detail {
+  color: var(--error-color) !important;
+  border-color: color-mix(in srgb, var(--error-color) 35%, var(--surface-border)) !important;
+  margin-top: 0;
+}
+
+.btn-delete-detail:hover {
+  background: color-mix(in srgb, var(--error-color) 8%, transparent) !important;
+  border-color: var(--error-color) !important;
+}
 
 @media (max-width: 860px) {
   .settings-grid { grid-template-columns: 1fr; }

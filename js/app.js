@@ -269,6 +269,14 @@ function wireLibraryBookCard(card, book) {
       markBookAsRead(b.id, parseInt(b.pageCount, 10) || 0);
     });
   }
+
+  const deleteBtn = card.querySelector('.btn-delete-book');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteBook(b.id, b.title);
+    });
+  }
 }
 
 function createLibraryBookCard(book) {
@@ -304,6 +312,7 @@ function createLibraryBookCard(book) {
       <div class="book-actions">
         ${b.status === 'ToRead' ? `<button type="button" class="btn-outline start-reading" data-id="${escapeHtml(b.id)}">Start</button>` : ''}
         ${b.status !== 'Read' ? `<button type="button" class="btn-primary mark-read" data-id="${escapeHtml(b.id)}">Finish</button>` : '<span class="book-finished-badge"><span>Finished</span><i data-lucide="check-circle" class="finished-icon"></i></span>'}
+        <button type="button" class="btn-delete-book" data-id="${escapeHtml(b.id)}" aria-label="Delete book"><i data-lucide="trash-2"></i></button>
       </div>
     </div>
   `;
@@ -440,21 +449,111 @@ function switchView(viewName) {
   document.getElementById(`view-${viewName}`).classList.remove('hidden');
 }
 
+// --- Reusable Confirm Modal ---
+function showConfirmModal({ title, message, confirmText = 'Confirm', confirmClass = 'btn-primary', onConfirm }) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.style.zIndex = 1300;
+  overlay.innerHTML = `
+    <div class="modal-card confirm-modal">
+      <div class="confirm-modal-icon"><i data-lucide="alert-triangle"></i></div>
+      <h3 class="confirm-modal-title">${escapeHtml(title)}</h3>
+      <p class="confirm-modal-msg">${escapeHtml(message)}</p>
+      <div class="confirm-modal-actions">
+        <button class="btn-outline confirm-cancel">Cancel</button>
+        <button class="${confirmClass} confirm-ok">${escapeHtml(confirmText)}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  lucide.createIcons();
+  const close = () => overlay.remove();
+  overlay.querySelector('.confirm-cancel').addEventListener('click', close);
+  overlay.querySelector('.confirm-ok').addEventListener('click', () => { close(); onConfirm(); });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+}
+
 // --- Logout ---
-document.getElementById('btn-logout').addEventListener('click', async () => {
+async function doSignOut() {
   await signOut(auth);
   localStorage.removeItem('akarabook_user');
   window.location.href = 'index.html';
+}
+
+document.getElementById('btn-logout').addEventListener('click', () => {
+  showConfirmModal({
+    title: 'Sign out?',
+    message: 'Your library stays saved in the cloud.',
+    confirmText: 'Sign Out',
+    confirmClass: 'btn-outline s-signout-btn',
+    onConfirm: doSignOut
+  });
 });
+
+// --- Search History ---
+const SEARCH_HISTORY_KEY = 'akarabook_search_history';
+const SEARCH_HISTORY_MAX = 8;
+
+function getSearchHistory() {
+  try { return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY)) || []; } catch { return []; }
+}
+
+function saveSearchTerm(term) {
+  if (!term) return;
+  let history = getSearchHistory().filter(t => t.toLowerCase() !== term.toLowerCase());
+  history.unshift(term);
+  if (history.length > SEARCH_HISTORY_MAX) history = history.slice(0, SEARCH_HISTORY_MAX);
+  try { localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history)); } catch {}
+}
+
+function renderSearchHistory() {
+  const dropdown = document.getElementById('search-history-dropdown');
+  if (!dropdown) return;
+  const history = getSearchHistory();
+  if (!history.length) { dropdown.classList.add('hidden'); return; }
+  dropdown.innerHTML = history.map((t, i) => `
+    <li class="sh-item">
+      <span class="sh-icon"><i data-lucide="clock"></i></span>
+      <span class="sh-term">${escapeHtml(t)}</span>
+      <button class="sh-remove" data-index="${i}" aria-label="Remove"><i data-lucide="x"></i></button>
+    </li>
+  `).join('');
+  dropdown.classList.remove('hidden');
+  lucide.createIcons();
+
+  dropdown.querySelectorAll('.sh-term').forEach((el, i) => {
+    el.addEventListener('click', () => {
+      searchInput.value = history[i];
+      dropdown.classList.add('hidden');
+      performSearch(history[i]);
+    });
+  });
+  dropdown.querySelectorAll('.sh-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.getAttribute('data-index'), 10);
+      const h = getSearchHistory();
+      h.splice(idx, 1);
+      try { localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(h)); } catch {}
+      renderSearchHistory();
+    });
+  });
+}
 
 // --- Search Google Books ---
 let searchTimeout;
 searchInput.addEventListener('input', (e) => {
   const queryText = e.target.value.trim();
   clearTimeout(searchTimeout);
-  
+  if (queryText.length === 0) {
+    renderSearchHistory();
+    searchOverlay.classList.add('hidden');
+    return;
+  }
+  document.getElementById('search-history-dropdown')?.classList.add('hidden');
   if (queryText.length > 2) {
     searchTimeout = setTimeout(() => {
+      saveSearchTerm(queryText);
       performSearch(queryText);
     }, 500);
   } else {
@@ -462,9 +561,19 @@ searchInput.addEventListener('input', (e) => {
   }
 });
 
+searchInput.addEventListener('focus', () => {
+  if (!searchInput.value.trim()) renderSearchHistory();
+});
+
+document.addEventListener('click', (e) => {
+  const dropdown = document.getElementById('search-history-dropdown');
+  if (dropdown && !searchContainer.contains(e.target)) dropdown.classList.add('hidden');
+});
+
 closeSearch.addEventListener('click', () => {
   searchOverlay.classList.add('hidden');
   searchInput.value = '';
+  document.getElementById('search-history-dropdown')?.classList.add('hidden');
   if (searchContainer) {
     searchContainer.classList.remove('expanded');
     searchContainer.classList.add('collapsed');
@@ -475,6 +584,7 @@ searchOverlay.addEventListener('click', (e) => {
   if (e.target === searchOverlay) {
     searchOverlay.classList.add('hidden');
     searchInput.value = '';
+    document.getElementById('search-history-dropdown')?.classList.add('hidden');
     if (searchContainer) {
       searchContainer.classList.remove('expanded');
       searchContainer.classList.add('collapsed');
@@ -1202,6 +1312,25 @@ function showFinishModal(book, totalPages, onSave) {
   })();
 }
 
+async function deleteBook(bookId, bookTitle) {
+  showConfirmModal({
+    title: 'Delete book?',
+    message: `"${bookTitle}" will be permanently removed from your library.`,
+    confirmText: 'Delete',
+    confirmClass: 'btn-primary btn-danger-confirm',
+    onConfirm: async () => {
+      try {
+        const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js');
+        await deleteDoc(doc(db, 'users', currentUser.uid, 'books', bookId));
+        await loadUserLibrary();
+        if (state.currentView === 'book-details') switchView('library');
+      } catch (e) {
+        console.error('Delete failed', e);
+      }
+    }
+  });
+}
+
 async function moveBookToReading(docId) {
   try {
     const bookRef = doc(db, 'users', currentUser.uid, 'books', docId);
@@ -1288,6 +1417,7 @@ function openBookDetails(book) {
           <textarea id="book-review-text" class="detail-textarea" rows="4" placeholder="Thoughts, quotes, spoilers in a safe vault…"></textarea>` : ''}
           <div class="detail-save-row">
             <button type="button" id="btn-save-book-details" class="btn-primary">Save details</button>
+            <button type="button" id="btn-delete-book-detail" class="btn-outline btn-delete-detail"><i data-lucide="trash-2"></i> Delete book</button>
             <span id="detail-save-status" class="detail-save-status">Saved!</span>
           </div>
         </div>
@@ -1334,6 +1464,10 @@ function openBookDetails(book) {
     } catch (e) {
       console.error(e);
     }
+  });
+
+  document.getElementById('btn-delete-book-detail')?.addEventListener('click', () => {
+    deleteBook(b.id, b.title);
   });
 
   document.getElementById('btn-save-book-details').addEventListener('click', async () => {
@@ -1921,6 +2055,16 @@ function bindForms() {
         document.documentElement.removeAttribute('data-reduced-motion');
       }
     } catch (err) { console.error(err); }
+  });
+
+  document.getElementById('btn-settings-sign-out')?.addEventListener('click', () => {
+    showConfirmModal({
+      title: 'Sign out?',
+      message: 'Your library stays saved in the cloud.',
+      confirmText: 'Sign Out',
+      confirmClass: 'btn-outline s-signout-btn',
+      onConfirm: doSignOut
+    });
   });
 
   document.getElementById('btn-save-goal')?.addEventListener('click', async () => {
