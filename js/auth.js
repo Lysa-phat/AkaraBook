@@ -5,7 +5,8 @@ import {
   signInWithPopup, 
   updateProfile,
   onAuthStateChanged,
-  sendEmailVerification
+  sendEmailVerification,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 // Initialize Icons if present
@@ -20,6 +21,7 @@ const loginForm = document.getElementById('login-form');
 const registerSection = document.getElementById('register-section');
 const loginSection = document.getElementById('login-section');
 const registerForm = document.getElementById('register-form');
+const verificationSection = document.getElementById('verification-section');
 
 const linkToRegister = document.getElementById('link-to-register');
 const linkToLogin = document.getElementById('link-to-login');
@@ -28,6 +30,13 @@ const btnGoogle = document.getElementById('btn-google');
 
 const loginError = document.getElementById('login-error');
 const regError = document.getElementById('reg-error');
+
+// Verification Elements
+const verificationEmail = document.getElementById('verification-email');
+const verificationStatus = document.querySelector('.verification-status');
+const btnResendEmail = document.getElementById('btn-resend-email');
+const btnRefreshStatus = document.getElementById('btn-refresh-status');
+const btnLogout = document.getElementById('btn-logout');
 
 // Toggle UI
 linkToRegister.addEventListener('click', (e) => {
@@ -42,17 +51,25 @@ linkToLogin.addEventListener('click', (e) => {
   loginSection.classList.remove('hidden');
 });
 
-// Auth State Observer - Redirect if authenticated
-onAuthStateChanged(auth, (user) => {
+// Auth State Observer - Check verification and redirect if authenticated
+onAuthStateChanged(auth, async (user) => {
   if (user) {
-    // Save to local storage for immediate reading across pages without waiting for observer
-    localStorage.setItem('akarabook_user', JSON.stringify({
-      uid: user.uid,
-      displayName: user.displayName,
-      email: user.email,
-      photoURL: user.photoURL
-    }));
-    window.location.href = 'app.html';
+    // Reload to get the latest email verification status
+    await user.reload();
+    
+    if (user.emailVerified) {
+      // Email is verified, save to local storage and redirect
+      localStorage.setItem('akarabook_user', JSON.stringify({
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL
+      }));
+      window.location.href = 'app.html';
+    } else {
+      // Email not verified, show verification screen
+      showVerificationScreen(user);
+    }
   } else {
     localStorage.removeItem('akarabook_user');
   }
@@ -67,6 +84,21 @@ const hideError = (el) => {
   el.classList.add('hidden');
   el.textContent = '';
 };
+
+// Show verification screen
+const showVerificationScreen = (user) => {
+  loginSection.classList.add('hidden');
+  registerSection.classList.add('hidden');
+  verificationSection.classList.remove('hidden');
+  verificationEmail.textContent = user.email;
+};
+
+// Hide verification screen
+const hideVerificationScreen = () => {
+  verificationSection.classList.add('hidden');
+  loginSection.classList.remove('hidden');
+};
+
 const getErrorMessage = (code) => {
   switch(code) {
     case 'auth/email-already-in-use': return 'This email is already registered. Please log in.';
@@ -144,14 +176,74 @@ registerForm.addEventListener('submit', async (e) => {
     // Reload user to ensure displayName gets updated immediately in local session
     await auth.currentUser.reload();
     
-    // Show success message and redirect
-    showError(regError, 'Account created! Check your email to verify your account.');
+    // Show verification screen (the observer will also trigger this)
+    showVerificationScreen(userCredential.user);
     
-    // The observer (onAuthStateChanged) will handle redirection.
   } catch (error) {
     showError(regError, getErrorMessage(error.code));
     btn.textContent = 'Create Account';
     btn.disabled = false;
+  }
+});
+
+// Verification Screen Event Listeners
+btnResendEmail.addEventListener('click', async () => {
+  const user = auth.currentUser;
+  if (user && !user.emailVerified) {
+    try {
+      btnResendEmail.disabled = true;
+      btnResendEmail.textContent = 'Sending...';
+      await sendEmailVerification(user);
+      verificationStatus.textContent = '✓ Verification email sent!';
+      setTimeout(() => {
+        verificationStatus.textContent = 'Waiting for verification...';
+      }, 3000);
+    } catch (error) {
+      verificationStatus.textContent = '✗ Failed to resend email. Try again.';
+    } finally {
+      btnResendEmail.disabled = false;
+      btnResendEmail.textContent = 'Resend Email';
+    }
+  }
+});
+
+btnRefreshStatus.addEventListener('click', async () => {
+  const user = auth.currentUser;
+  if (user) {
+    try {
+      btnRefreshStatus.disabled = true;
+      btnRefreshStatus.textContent = 'Checking...';
+      await user.reload();
+      
+      if (user.emailVerified) {
+        verificationStatus.textContent = '✓ Email verified! Redirecting...';
+        setTimeout(() => {
+          localStorage.setItem('akarabook_user', JSON.stringify({
+            uid: user.uid,
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL
+          }));
+          window.location.href = 'app.html';
+        }, 1500);
+      } else {
+        verificationStatus.textContent = 'Waiting for verification...';
+      }
+    } catch (error) {
+      verificationStatus.textContent = '✗ Error checking status. Try again.';
+    } finally {
+      btnRefreshStatus.disabled = false;
+      btnRefreshStatus.textContent = 'Refresh Status';
+    }
+  }
+});
+
+btnLogout.addEventListener('click', async () => {
+  try {
+    await signOut(auth);
+    hideVerificationScreen();
+  } catch (error) {
+    console.error('Error signing out:', error);
   }
 });
 

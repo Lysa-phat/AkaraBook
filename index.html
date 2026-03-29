@@ -146,6 +146,33 @@
             Already have an account? <a href="#" id="link-to-login">Log in</a>
           </p>
         </div>
+
+        <div class="auth-forms hidden" id="verification-section">
+          <div class="verification-container">
+            <div class="book-loader">
+              <div class="book">
+                <div class="book-page"></div>
+                <div class="book-page"></div>
+                <div class="book-page"></div>
+              </div>
+              <div class="book-sparkles">
+                <span class="sparkle"></span>
+                <span class="sparkle"></span>
+                <span class="sparkle"></span>
+                <span class="sparkle"></span>
+              </div>
+            </div>
+            <h3>Verify Your Email</h3>
+            <p class="subtitle">We've sent a verification link to<br><strong id="verification-email"></strong></p>
+            <p class="verification-message">Please check your email (and spam folder) and click the verification link to continue. This usually takes a few seconds.</p>
+            <div class="verification-actions">
+              <p class="verification-status">Waiting for verification...</p>
+              <button type="button" class="btn-outline" id="btn-resend-email">Resend Email</button>
+              <button type="button" class="btn-outline" id="btn-refresh-status">Refresh Status</button>
+              <button type="button" class="btn-outline" id="btn-logout">Back to Login</button>
+            </div>
+          </div>
+        </div>
         
       </div>
     </div>
