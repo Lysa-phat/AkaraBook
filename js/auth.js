@@ -4,7 +4,8 @@ import {
   signInWithEmailAndPassword, 
   signInWithPopup, 
   updateProfile,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 // Initialize Icons if present
@@ -137,8 +138,14 @@ registerForm.addEventListener('submit', async (e) => {
       displayName: name
     });
     
+    // Send email verification
+    await sendEmailVerification(userCredential.user);
+    
     // Reload user to ensure displayName gets updated immediately in local session
     await auth.currentUser.reload();
+    
+    // Show success message and redirect
+    showError(regError, 'Account created! Check your email to verify your account.');
     
     // The observer (onAuthStateChanged) will handle redirection.
   } catch (error) {
